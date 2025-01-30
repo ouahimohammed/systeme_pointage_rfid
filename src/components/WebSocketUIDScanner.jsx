@@ -1,12 +1,13 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { WifiIcon, CreditCardIcon, CheckCircleIcon, XCircleIcon, ActivityIcon, SunIcon, MoonIcon } from "lucide-react";
+import { WifiIcon, CreditCardIcon, CheckCircleIcon, XCircleIcon, ActivityIcon, SunIcon, MoonIcon, History } from "lucide-react";
 
 export default function WebSocketUIDScanner() {
   const [uid, setUid] = useState("");
   const [status, setStatus] = useState("Déconnecté");
   const [isScanning, setIsScanning] = useState(false);
   const [isDark, setIsDark] = useState(false);
+  const [scanHistory, setScanHistory] = useState([]);
 
   useEffect(() => {
     const ws = new WebSocket("ws://192.168.100.114:81");
@@ -17,8 +18,22 @@ export default function WebSocketUIDScanner() {
     };
 
     ws.onmessage = (message) => {
-      setUid(message.data);
+      const newUid = message.data;
+      setUid(newUid);
       setIsScanning(false);
+      
+      // Add to scan history with timestamp
+      setScanHistory(prev => {
+        const newHistory = [
+          {
+            uid: newUid,
+            timestamp: new Date().toLocaleTimeString('fr-FR'),
+          },
+          ...prev,
+        ].slice(0, 5); // Keep only last 5 scans
+        return newHistory;
+      });
+      
       setTimeout(() => setIsScanning(true), 2000);
     };
 
@@ -39,8 +54,8 @@ export default function WebSocketUIDScanner() {
   return (
     <div className={`min-h-screen transition-colors duration-300 ${
       isDark 
-        ? "bg-gradient-to-br from-slate-900 to-slate-800 text-white" 
-        : "bg-gradient-to-br from-blue-50 to-slate-50 text-slate-900"
+        ? "bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white" 
+        : "bg-gradient-to-br from-blue-50 via-white to-slate-50 text-slate-900"
     }`}>
       <div className="container mx-auto p-8">
         <div className="flex items-center justify-between mb-12">
@@ -53,16 +68,16 @@ export default function WebSocketUIDScanner() {
               Scanner RFID
             </h1>
             <p className={`mt-2 ${isDark ? "text-slate-400" : "text-slate-600"}`}>
-              Système de surveillance en temps réel
+              Système de surveillance en temps réel ✨
             </p>
           </div>
           <div className="flex items-center gap-4">
             <button
               onClick={() => setIsDark(!isDark)}
-              className={`p-2 rounded-full transition-colors ${
+              className={`p-3 rounded-full transition-all duration-300 ${
                 isDark 
-                  ? "bg-slate-700/50 hover:bg-slate-600/50" 
-                  : "bg-white shadow-md hover:bg-gray-50"
+                  ? "bg-slate-700/50 hover:bg-slate-600/50 hover:scale-110" 
+                  : "bg-white shadow-lg hover:shadow-xl hover:scale-110"
               }`}
             >
               {isDark ? (
@@ -71,16 +86,16 @@ export default function WebSocketUIDScanner() {
                 <MoonIcon className="text-slate-600" size={20} />
               )}
             </button>
-            <div className={`flex items-center gap-3 px-4 py-2 rounded-full ${
+            <div className={`flex items-center gap-3 px-4 py-2 rounded-full transition-all duration-300 ${
               isDark 
-                ? "bg-slate-800/50" 
-                : "bg-white shadow-md"
+                ? "bg-slate-800/50 backdrop-blur-sm" 
+                : "bg-white shadow-lg"
             }`}>
               <WifiIcon 
-                className={status === "Connecté" ? "text-emerald-500" : "text-red-500"} 
+                className={`${status === "Connecté" ? "text-emerald-500" : "text-red-500"} transition-colors duration-300`}
                 size={20} 
               />
-              <span className={status === "Connecté" ? "text-emerald-500" : "text-red-500"}>
+              <span className={`${status === "Connecté" ? "text-emerald-500" : "text-red-500"} font-medium transition-colors duration-300`}>
                 {status}
               </span>
             </div>
@@ -88,10 +103,10 @@ export default function WebSocketUIDScanner() {
         </div>
 
         <div className="grid gap-8 lg:grid-cols-2">
-          <div className={`p-8 rounded-2xl transition-colors ${
+          <div className={`p-8 rounded-2xl transition-all duration-300 ${
             isDark 
-              ? "bg-slate-800/50 backdrop-blur-sm border border-slate-700/50" 
-              : "bg-white shadow-lg"
+              ? "bg-slate-800/50 backdrop-blur-sm border border-slate-700/50 hover:bg-slate-800/60" 
+              : "bg-white shadow-lg hover:shadow-xl"
           }`}>
             <h2 className={`text-xl font-semibold mb-8 flex items-center gap-2 ${
               isDark ? "text-white" : "text-slate-900"
@@ -111,7 +126,6 @@ export default function WebSocketUIDScanner() {
                   ease: "easeInOut",
                 }}
               >
-                {/* Pulse Effect */}
                 {isScanning && status === "Connecté" && (
                   <motion.div
                     className="absolute inset-0 rounded-full bg-blue-500/20"
@@ -126,29 +140,29 @@ export default function WebSocketUIDScanner() {
                     }}
                   />
                 )}
-                <div className={`relative z-10 h-48 w-48 rounded-full flex items-center justify-center ${
+                <div className={`relative z-10 h-48 w-48 rounded-full flex items-center justify-center transition-all duration-300 ${
                   isDark 
                     ? "bg-slate-700/50 border border-slate-600/50" 
                     : "bg-slate-100 border border-slate-200"
                 }`}>
                   {status === "Connecté" ? (
                     isScanning ? (
-                      <CreditCardIcon className="h-24 w-24 text-blue-500" />
+                      <CreditCardIcon className="h-24 w-24 text-blue-500 transition-colors duration-300" />
                     ) : (
-                      <CheckCircleIcon className="h-24 w-24 text-emerald-500" />
+                      <CheckCircleIcon className="h-24 w-24 text-emerald-500 transition-colors duration-300" />
                     )
                   ) : (
-                    <XCircleIcon className="h-24 w-24 text-red-500" />
+                    <XCircleIcon className="h-24 w-24 text-red-500 transition-colors duration-300" />
                   )}
                 </div>
               </motion.div>
             </div>
           </div>
 
-          <div className={`p-8 rounded-2xl transition-colors ${
+          <div className={`p-8 rounded-2xl transition-all duration-300 ${
             isDark 
-              ? "bg-slate-800/50 backdrop-blur-sm border border-slate-700/50" 
-              : "bg-white shadow-lg"
+              ? "bg-slate-800/50 backdrop-blur-sm border border-slate-700/50 hover:bg-slate-800/60" 
+              : "bg-white shadow-lg hover:shadow-xl"
           }`}>
             <h2 className={`text-xl font-semibold mb-8 flex items-center gap-2 ${
               isDark ? "text-white" : "text-slate-900"
@@ -163,7 +177,7 @@ export default function WebSocketUIDScanner() {
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -20 }}
-                  className={`rounded-xl p-6 ${
+                  className={`rounded-xl p-6 transition-all duration-300 ${
                     isDark 
                       ? "bg-emerald-500/10 border border-emerald-500/20" 
                       : "bg-emerald-50 border border-emerald-100"
@@ -181,7 +195,7 @@ export default function WebSocketUIDScanner() {
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -20 }}
-                  className={`rounded-xl p-6 ${
+                  className={`rounded-xl p-6 transition-all duration-300 ${
                     isDark 
                       ? "bg-slate-700/30 border border-slate-600/50" 
                       : "bg-slate-50 border border-slate-200"
@@ -201,27 +215,44 @@ export default function WebSocketUIDScanner() {
 
             {/* Activity Log */}
             <div className="mt-8">
-              <h3 className={`text-sm font-medium mb-4 ${
+              <h3 className={`text-sm font-medium mb-4 flex items-center gap-2 ${
                 isDark ? "text-slate-400" : "text-slate-600"
               }`}>
+                <History size={16} />
                 Activité Récente
               </h3>
               <div className="space-y-3">
-                {[...Array(3)].map((_, i) => (
-                  <div
-                    key={i}
-                    className={`flex items-center gap-3 text-sm p-3 rounded-lg ${
-                      isDark 
-                        ? "text-slate-500 bg-slate-800/30" 
-                        : "text-slate-600 bg-slate-50"
-                    }`}
-                  >
-                    <div className={`h-2 w-2 rounded-full ${
-                      isDark ? "bg-slate-600" : "bg-slate-400"
-                    }`} />
-                    <span>Scan {i + 1} - En attente</span>
+                {scanHistory.length > 0 ? (
+                  scanHistory.map((scan, i) => (
+                    <motion.div
+                      key={i}
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: i * 0.1 }}
+                      className={`flex items-center justify-between p-4 rounded-lg transition-all duration-300 ${
+                        isDark 
+                          ? "bg-slate-700/30 hover:bg-slate-700/50" 
+                          : "bg-slate-50 hover:bg-slate-100"
+                      }`}
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className={`h-2 w-2 rounded-full bg-blue-500`} />
+                        <span className={`font-mono ${isDark ? "text-slate-300" : "text-slate-700"}`}>
+                          {scan.uid}
+                        </span>
+                      </div>
+                      <span className={`text-sm ${isDark ? "text-slate-500" : "text-slate-500"}`}>
+                        {scan.timestamp}
+                      </span>
+                    </motion.div>
+                  ))
+                ) : (
+                  <div className={`text-center p-4 rounded-lg ${
+                    isDark ? "text-slate-500 bg-slate-800/30" : "text-slate-600 bg-slate-50"
+                  }`}>
+                    Aucun scan enregistré
                   </div>
-                ))}
+                )}
               </div>
             </div>
           </div>

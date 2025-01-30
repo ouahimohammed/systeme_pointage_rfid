@@ -1,127 +1,126 @@
-"use client"
-
-import  { useState } from "react"
-import { signInWithEmailAndPassword } from "firebase/auth"
-import { auth } from "../lib/firebase"
-import { useNavigate } from "react-router-dom"
-import "bootstrap/dist/css/bootstrap.min.css"
+import { useState } from "react";
+import { signInWithEmailAndPassword } from "firebase/auth";
+import { auth } from "../lib/firebase";
+import { useNavigate } from "react-router-dom";
+import { Mail, Lock, Building2, ArrowRight } from "lucide-react";
 
 const Login = () => {
-  const [email, setEmail] = useState("")
-  const [password, setPassword] = useState("")
-  const [error, setError] = useState("")
-  const navigate = useNavigate()
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const navigate = useNavigate();
 
   const handleLogin = async (e) => {
-    e.preventDefault()
-    setError("")
+    e.preventDefault();
+    setError("");
+    setIsLoading(true);
 
     try {
-      await signInWithEmailAndPassword(auth, email, password)
-      localStorage.setItem("isAuthenticated", "true")
-      navigate("/dashboard")
+      await signInWithEmailAndPassword(auth, email, password);
+      localStorage.setItem("isAuthenticated", "true");
+      navigate("/dashboard");
     } catch (err) {
-      setError("Identifiants incorrects ou problème de connexion")
+      setError("Identifiants incorrects ou problème de connexion");
+    } finally {
+      setIsLoading(false);
     }
-  }
+  };
 
   return (
-    <div
-      className="container d-flex justify-content-center align-items-center"
-      style={{
-        background: "#fff",
-        height: "95vh", // Slightly smaller than full viewport height
-        overflow: "hidden", // Prevents scrolling
-      }}
-    >
-      <div
-        className="row border rounded-5 p-4 bg-white shadow box-area"
-        style={{
-          width: "1000px",
-          height: "600px",
-        }}
-      >
-        {/* Left Box */}
-        <div
-          className="col-md-6 rounded-4 d-flex justify-content-center align-items-center flex-column left-box"
-          style={{
-            background: "#103cbe",
-            height: "100%",
-          }}
-        >
-          <div className="featured-image mb-3">
-            <img src="/1.png" className="img-fluid" alt="Featured" style={{ width: "300px" }} />
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
+      <div className="w-full max-w-6xl bg-white rounded-2xl shadow-2xl overflow-hidden flex flex-col md:flex-row transform hover:scale-[1.01] transition-transform duration-300">
+        {/* Left Side */}
+        <div className="md:w-1/2 bg-gradient-to-br from-blue-600 to-indigo-700 p-12 text-white flex flex-col justify-center items-center relative overflow-hidden">
+          <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1497215728101-856f4ea42174')] opacity-10 bg-cover bg-center" />
+          <div className="relative z-10 text-center">
+            <Building2 className="w-20 h-20 mb-8 mx-auto animate-float" />
+            <h2 className="text-4xl font-bold mb-6">Gestion RH Pro 👥</h2>
+            <p className="text-xl mb-8 leading-relaxed">
+              Gérez les <span className="text-yellow-300 font-semibold">absences</span> de vos employés 
+              avec simplicité et efficacité ✨
+            </p>
+            <div className="space-y-4 text-lg">
+              <p className="flex items-center gap-2">
+                <span className="text-2xl">📊</span> Tableau de bord intuitif
+              </p>
+              <p className="flex items-center gap-2">
+                <span className="text-2xl">🔄</span> Suivi en temps réel
+              </p>
+              <p className="flex items-center gap-2">
+                <span className="text-2xl">📱</span> Accessible partout
+              </p>
+            </div>
           </div>
-          <p
-            className="text-white fs-2"
-            style={{ fontFamily: "'Courier New', Courier, monospace", fontWeight: 600 }}
-          ></p>
-          <small
-            className="text-white text-wrap text-center"
-            style={{
-              width: "20rem",
-              fontFamily: "'Courier New', Courier, monospace",
-              fontSize: "20px",
-              fontWeight: "bold",
-            }}
-          >
-            Gérez les <span style={{ color: "#FFD700" }}>absences</span> de vos employés facilement
-          </small>
         </div>
 
-        {/* Right Box */}
-        <div className="col-md-6 right-box d-flex flex-column justify-content-center" style={{ padding: "50px" }}>
-          <form onSubmit={handleLogin}>
-            <div className="header-text mb-4">
-              <h2 style={{ fontSize: "2rem" }}>Bonjour, encore une fois !</h2>
-              <p style={{ fontSize: "1.2rem" }}>Nous sommes ravis de vous revoir.</p>
-            </div>
+        {/* Right Side */}
+        <div className="md:w-1/2 p-12">
+          <div className="max-w-md mx-auto">
+            <h2 className="text-3xl font-bold mb-2">Bon retour! 👋</h2>
+            <p className="text-gray-600 mb-8">Nous sommes ravis de vous revoir.</p>
 
-            {/* Email Field */}
-            <div className="input-group mb-4">
-              <input
-                type="text"
-                className="form-control form-control-lg bg-light fs-5"
-                placeholder="Username"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-              />
-            </div>
-
-            {/* Password Field */}
-            <div className="input-group mb-4">
-              <input
-                type="password"
-                className="form-control form-control-lg bg-light fs-5"
-                placeholder="Password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-              />
-            </div>
-
-            {/* Error Message */}
-            {error && <div className="alert alert-danger">{error}</div>}
-
-            {/* Checkbox and Forgot Password */}
-            <div className="input-group mb-5 d-flex justify-content-between">
-              <div className="form-check">
-                <input type="checkbox" className="form-check-input" id="formCheck" />
-                <label htmlFor="formCheck" className="form-check-label text-secondary">
-                  <small>Remember Me</small>
-                </label>
+            <form onSubmit={handleLogin} className="space-y-6">
+              <div className="relative">
+                <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                  placeholder="Email"
+                  required
+                />
               </div>
-            </div>
 
-            {/* Login Button */}
-            <div className="input-group mb-3">
-              <button className="btn btn-lg btn-primary w-100 fs-5">Login</button>
-            </div>
-          </form>
+              <div className="relative">
+                <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                <input
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                  placeholder="Mot de passe"
+                  required
+                />
+              </div>
+
+              {error && (
+                <div className="bg-red-50 text-red-600 p-4 rounded-lg flex items-center gap-2 animate-shake">
+                  ⚠️ {error}
+                </div>
+              )}
+
+              <div className="flex items-center justify-between">
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input type="checkbox" className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500" />
+                  <span className="text-gray-600">Se souvenir de moi</span>
+                </label>
+                <a href="#" className="text-blue-600 hover:text-blue-700 transition-colors">
+                  Mot de passe oublié?
+                </a>
+              </div>
+
+              <button
+                type="submit"
+                disabled={isLoading}
+                className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg font-semibold flex items-center justify-center gap-2 transform hover:translate-y-[-1px] transition-all duration-200"
+              >
+                {isLoading ? (
+                  <div className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent" />
+                ) : (
+                  <>
+                    Se connecter
+                    <ArrowRight className="w-5 h-5" />
+                  </>
+                )}
+              </button>
+            </form>
+          </div>
         </div>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default Login
-
+export default Login;
