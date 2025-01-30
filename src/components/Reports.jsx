@@ -123,7 +123,12 @@ export default function Reports() {
           employeeName: employee.fullName,
           action: record.action,
           date: record.timestamp.split('T')[0],
-          time: new Date(record.timestamp).toLocaleTimeString(),
+          time: new Date(record.timestamp).toLocaleTimeString('fr-FR', { 
+            hour: '2-digit', 
+            minute: '2-digit', 
+            second: '2-digit',
+            hour12: false 
+          }),
           timestamp: record.timestamp
         });
       });
@@ -192,8 +197,18 @@ export default function Reports() {
 
       // Detailed records table for this employee
       const employeeRecords = stats.records.map(record => [
-        new Date(record.timestamp).toLocaleDateString(),
-        new Date(record.timestamp).toLocaleTimeString(),
+        new Date(record.timestamp).toLocaleDateString('fr-FR', { 
+          hour: '2-digit', 
+          minute: '2-digit', 
+          second: '2-digit',
+          hour12: false 
+        }),
+        new Date(record.timestamp).toLocaleTimeString('fr-FR', { 
+          hour: '2-digit', 
+          minute: '2-digit', 
+          second: '2-digit',
+          hour12: false 
+        }),
         record.action === 'check-in' ? 'Entrée' : 'Sortie'
       ]);
 

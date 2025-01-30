@@ -9,7 +9,7 @@ export default function Attendance() {
   const [latestScans, setLatestScans] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [dateFilter, setDateFilter] = useState("");
-  const [currentTime, setCurrentTime] = useState(new Date());
+  const [currentTime, setCurrentTime] = useState(new Date(), 1000);
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -159,8 +159,13 @@ export default function Attendance() {
           <h1 className="text-4xl font-bold text-indigo-900 mb-2 animate-fade-in">
             🏢 Système de Présence
           </h1>
-          <div className="text-2xl font-digital text-indigo-600 animate-pulse">
-            {currentTime.toLocaleTimeString()}
+          <div className="text-2xl font-digital text-indigo-600 animate-pulse"> <h3>
+          {currentTime.toLocaleTimeString('fr-FR', { 
+              hour: '2-digit', 
+              minute: '2-digit', 
+              second: '2-digit',
+              hour12: false 
+            })}</h3>  
           </div>
         </div>
 
@@ -259,10 +264,19 @@ export default function Attendance() {
                   `}>
                     <td className="px-6 py-4">{employee?.fullName || 'Inconnu'}</td>
                     <td className="px-6 py-4">
-                      {recordDate.toLocaleDateString()}
+                      {recordDate.toLocaleDateString('fr-FR', {
+                        year: 'numeric',
+                        month: '2-digit',
+                        day: '2-digit'
+                      })}
                     </td>
                     <td className="px-6 py-4">
-                      {recordDate.toLocaleTimeString()}
+                      {recordDate.toLocaleTimeString('fr-FR', {
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        second: '2-digit',
+                        hour12: false
+                      })}
                     </td>
                     <td className="px-6 py-4">
                       <span className={`px-3 py-1 rounded-full text-sm ${
