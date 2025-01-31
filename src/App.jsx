@@ -9,7 +9,8 @@ import Dashboard from './components/Dashboard';
 import Reports from './components/Reports';
 import WebSocketUIDScanner from './components/WebSocketUIDScanner';
 import Profile from './components/Profile';
-import Attendance from './components/Attendance'; // Import the new Attendance component
+import Attendance from './components/Attendance';
+import AbsentEmp from './components/AbsentEmp';
 
 function DashboardLayout({ children }) {
   return (
@@ -68,7 +69,7 @@ export default function App() {
           }
         />
         <Route
-          path="/attendance" // Add the new route for attendance
+          path="/attendance"
           element={
             <PrivateRoute>
               <Attendance />
@@ -96,6 +97,14 @@ export default function App() {
           element={
             <PrivateRoute>
               <Profile />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/absent"
+          element={
+            <PrivateRoute>
+              <AbsentEmp />
             </PrivateRoute>
           }
         />

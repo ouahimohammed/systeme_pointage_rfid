@@ -41,7 +41,7 @@ export default function Employees() {
   }, []);
 
   useEffect(() => {
-    const ws = new WebSocket('ws://192.168.100.114:81');
+    const ws = new WebSocket('ws://192.168.10.105:81');
 
     ws.onopen = () => {
       setStatus('Connecté au WebSocket');

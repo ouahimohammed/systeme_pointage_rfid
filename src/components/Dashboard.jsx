@@ -1,5 +1,10 @@
 import { useState, useEffect, useMemo } from "react";
 import { ref, onValue } from "firebase/database";
+import { useNavigate } from 'react-router-dom';
+
+// Add useNavigate to your imports at the top
+// Then update the card section:
+
 import { db } from "../lib/firebase";
 import { Bar } from "react-chartjs-2";
 import {
@@ -25,7 +30,7 @@ export default function Dashboard() {
   const [absenceCount, setAbsenceCount] = useState(0);
   const [presenceByDepartment, setPresenceByDepartment] = useState({});
   const [employees, setEmployees] = useState({});
-
+  const navigate = useNavigate();
   useEffect(() => {
     const employeesRef = ref(db, "employees");
 
@@ -242,15 +247,23 @@ export default function Dashboard() {
             </div>
           </div>
 
-          <div className="bg-white rounded-2xl shadow-lg p-6 transform hover:scale-105 transition-all duration-300">
+          <div 
+            className="bg-white rounded-2xl shadow-lg p-6 transform hover:scale-105 transition-all duration-300 cursor-pointer" 
+            onClick={() => navigate('/absent')}
+            role="button"
+            tabIndex={0}
+            onKeyDown={(e) => e.key === 'Enter' && navigate('/absent')}
+          >
             <div className="flex items-center justify-between">
               <div>
-                <h2 className="text-lg font-semibold text-gray-700 mb-1">Employés absents</h2>
+                <h2 className="text-lg font-semibold text-gray-700 mb-1">
+                  Employés absents 🏃‍♂️
+                </h2>
                 <p className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-red-500 to-pink-500">
                   {absenceCount}
                 </p>
               </div>
-              <div className="bg-red-100 p-3 rounded-full">
+              <div className="bg-red-100 p-3 rounded-full animate-pulse">
                 <UserX className="w-6 h-6 text-red-600" />
               </div>
             </div>
@@ -258,7 +271,9 @@ export default function Dashboard() {
               <TrendingUp className="w-4 h-4 mr-1" />
               <span>Aujourd'hui</span>
             </div>
-          </div>
+</div>
+
+
         </div>
 
         {/* Graphiques */}
