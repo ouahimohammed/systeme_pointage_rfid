@@ -59,7 +59,8 @@ function AbsentEmp() {
   }, [selectedDate])
 
   const filteredEmployees = absentEmployees.filter((employee) => {
-    const matchesSearch = employee.fullName.toLowerCase().includes(searchTerm.toLowerCase())
+    const matchesSearch = employee.fullName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         (employee.cin && employee.cin.toLowerCase().includes(searchTerm.toLowerCase()))
     const matchesDepartment = !selectedDepartment || employee.department === selectedDepartment
     return matchesSearch && matchesDepartment
   })
@@ -72,32 +73,25 @@ function AbsentEmp() {
       const worksheet = workbook.addWorksheet("Absents")
 
       worksheet.columns = [
-        { header: "", key: "fullName", width: 40 },
+        { header: "NOM COMPLET", key: "fullName", width: 40 },
+        { header: "CIN", key: "cin", width: 20 },
         { header: "DEPARTEMENT", key: "department", width: 25 },
       ]
 
       const titleRow = worksheet.addRow(["Liste des Employés Absents"])
       titleRow.font = { bold: true, size: 16 }
-      worksheet.mergeCells("A1:B1")
-      worksheet.mergeCells("A2:B2")
+      worksheet.mergeCells("A1:C1")
 
-      titleRow.eachCell((cell) => {
-        cell.alignment = { horizontal: "center" }
-      })
-
-      worksheet.addRow([]) // Ligne vide
+      worksheet.addRow([]) // Empty row
 
       const dateRow = worksheet.addRow([`Date: ${format(new Date(selectedDate), "dd MMMM yyyy", { locale: fr })}`])
       dateRow.font = { bold: true, size: 12, color: { argb: "FF666666" } }
-      worksheet.mergeCells("A4:B4")
+      worksheet.mergeCells("A3:C3")
 
-      dateRow.eachCell((cell) => {
-        cell.alignment = { horizontal: "center" }
-      })
+      worksheet.addRow([]) // Empty row
 
-      worksheet.addRow([]) // Ligne vide
-
-      const headerRow = worksheet.addRow(["NOM COMPLET", "DEPARTEMENT"])
+      const headerRow = worksheet.getRow(5)
+      headerRow.values = ["NOM COMPLET", "CIN", "DEPARTEMENT"]
       headerRow.font = { bold: true, color: { argb: "FFFFFFFF" } }
       headerRow.eachCell((cell) => {
         cell.alignment = { horizontal: "left" }
@@ -111,6 +105,7 @@ function AbsentEmp() {
       filteredEmployees.forEach((employee, index) => {
         const row = worksheet.addRow({
           fullName: employee.fullName,
+          cin: employee.cin || "N/A",
           department: employee.department,
         })
 
@@ -171,7 +166,7 @@ function AbsentEmp() {
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
               <input
                 type="text"
-                placeholder="Rechercher par nom... 🔍"
+                placeholder="Rechercher par nom ou CIN... 🔍"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-red-500"
@@ -227,6 +222,7 @@ function AbsentEmp() {
               <thead>
                 <tr className="bg-gradient-to-r from-red-600 to-pink-600 text-white">
                   <th className="px-6 py-4 text-left">Nom de l'Employé</th>
+                  <th className="px-6 py-4 text-left">CIN</th>
                   <th className="px-6 py-4 text-left">Département</th>
                 </tr>
               </thead>
@@ -249,6 +245,7 @@ function AbsentEmp() {
                         <span>{employee.fullName}</span>
                       </div>
                     </td>
+                    <td className="px-6 py-4 font-mono">{employee.cin || "N/A"}</td>
                     <td className="px-6 py-4">{employee.department}</td>
                   </tr>
                 ))}
@@ -269,5 +266,4 @@ function AbsentEmp() {
   )
 }
 
-export default AbsentEmp
-
+export default AbsentEmp ;
