@@ -11,6 +11,7 @@ import WebSocketUIDScanner from './components/WebSocketUIDScanner';
 import Profile from './components/Profile';
 import Attendance from './components/Attendance';
 import AbsentEmp from './components/AbsentEmp';
+import RecentActivities from './components/RecentActivities';
 
 function DashboardLayout({ children }) {
   return (
@@ -105,6 +106,14 @@ export default function App() {
           element={
             <PrivateRoute>
               <AbsentEmp />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/activities"
+          element={
+            <PrivateRoute>
+              <RecentActivities />
             </PrivateRoute>
           }
         />

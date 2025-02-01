@@ -10,7 +10,7 @@ export default function WebSocketUIDScanner() {
   const [scanHistory, setScanHistory] = useState([]);
 
   useEffect(() => {
-    const ws = new WebSocket("ws://192.168.1.43:81");
+    const ws = new WebSocket("ws://192.168.100.114:81");
 
     ws.onopen = () => {
       setStatus("Connecté");

@@ -1,10 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
+import { useNavigate } from "react-router-dom";
 import { ref, onValue } from "firebase/database";
-import { useNavigate } from 'react-router-dom';
-
-// Add useNavigate to your imports at the top
-// Then update the card section:
-
 import { db } from "../lib/firebase";
 import { Bar } from "react-chartjs-2";
 import {
@@ -18,11 +14,33 @@ import {
 } from "chart.js";
 import { formatDistanceToNow } from "date-fns";
 import { fr } from "date-fns/locale";
-import { Users, UserCheck, UserX, TrendingUp, Activity } from 'lucide-react';
+import {
+  Users,
+  UserCheck,
+  UserX,
+  TrendingUp,
+  Activity,
+  Bell,
+  Calendar,
+  Coffee,
+  Award
+} from 'lucide-react';
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
 
-export default function Dashboard() {
+function AbsentPage() {
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 py-8 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-7xl mx-auto">
+        <h1 className="text-3xl font-bold text-gray-900 mb-8">Liste des Absents</h1>
+        {/* Add your absent employees list here */}
+      </div>
+    </div>
+  );
+}
+
+function Dashboard() {
+  const navigate = useNavigate();
   const [employeeCount, setEmployeeCount] = useState(0);
   const [departmentData, setDepartmentData] = useState({});
   const [recentActivities, setRecentActivities] = useState([]);
@@ -30,11 +48,16 @@ export default function Dashboard() {
   const [absenceCount, setAbsenceCount] = useState(0);
   const [presenceByDepartment, setPresenceByDepartment] = useState({});
   const [employees, setEmployees] = useState({});
-  const navigate = useNavigate();
+  const [isLoading, setIsLoading] = useState(true);
+  const [notifications, setNotifications] = useState([]);
+  const [events, setEvents] = useState([]);
+  const [showNotifications, setShowNotifications] = useState(false);
+  const [showCalendar, setShowCalendar] = useState(false);
+  // Firebase data fetching for employees
   useEffect(() => {
     const employeesRef = ref(db, "employees");
 
-    onValue(employeesRef, (snapshot) => {
+    const unsubscribe = onValue(employeesRef, (snapshot) => {
       const data = snapshot.val();
       if (data) {
         setEmployees(data);
@@ -59,14 +82,18 @@ export default function Dashboard() {
         setDepartmentData({});
         setRecentActivities([]);
       }
+      setIsLoading(false);
     });
+
+    return () => unsubscribe();
   }, []);
 
+  // Firebase data fetching for attendance
   useEffect(() => {
-    const attendanceRef = ref(db, "attendance");
-
     if (Object.keys(employees).length > 0) {
-      onValue(attendanceRef, (snapshot) => {
+      const attendanceRef = ref(db, "attendance");
+
+      const unsubscribe = onValue(attendanceRef, (snapshot) => {
         const data = snapshot.val();
         if (data) {
           const today = new Date().toISOString().split("T")[0];
@@ -97,8 +124,28 @@ export default function Dashboard() {
           setPresenceByDepartment({});
         }
       });
+
+      return () => unsubscribe();
     }
   }, [employees]);
+  // Nouvel effet pour simuler les notifications
+  useEffect(() => {
+    // Simuler des notifications en temps réel
+    const newNotifications = [
+      { id: 1, message: "Ahmed vient d'arriver", time: new Date(), type: "presence" },
+      { id: 2, message: "Sara est en retard", time: new Date(Date.now() - 3600000), type: "alert" },
+      { id: 3, message: "Réunion dans 30 minutes", time: new Date(Date.now() + 1800000), type: "event" }
+    ];
+    setNotifications(newNotifications);
+
+    // Simuler des événements du calendrier
+    const newEvents = [
+      { id: 1, title: "Réunion d'équipe", date: new Date(), type: "meeting" },
+      { id: 2, title: "Formation RH", date: new Date(Date.now() + 86400000), type: "training" },
+      { id: 3, title: "Entretiens", date: new Date(Date.now() + 172800000), type: "interview" }
+    ];
+    setEvents(newEvents);
+  }, []);
 
   const chartData = useMemo(
     () => ({
@@ -108,10 +155,10 @@ export default function Dashboard() {
           label: "Employés par département",
           data: Object.values(departmentData),
           backgroundColor: [
-            'rgba(99, 102, 241, 0.6)',
-            'rgba(168, 85, 247, 0.6)',
-            'rgba(236, 72, 153, 0.6)',
-            'rgba(239, 68, 68, 0.6)',
+            'rgba(99, 102, 241, 0.8)',
+            'rgba(168, 85, 247, 0.8)',
+            'rgba(236, 72, 153, 0.8)',
+            'rgba(239, 68, 68, 0.8)',
           ],
           borderColor: [
             'rgba(99, 102, 241, 1)',
@@ -119,8 +166,8 @@ export default function Dashboard() {
             'rgba(236, 72, 153, 1)',
             'rgba(239, 68, 68, 1)',
           ],
-          borderWidth: 1,
-          borderRadius: 8,
+          borderWidth: 2,
+          borderRadius: 12,
         },
       ],
     }),
@@ -135,10 +182,10 @@ export default function Dashboard() {
           label: "Présence par département",
           data: Object.values(presenceByDepartment),
           backgroundColor: [
-            'rgba(16, 185, 129, 0.6)',
-            'rgba(245, 158, 11, 0.6)',
-            'rgba(59, 130, 246, 0.6)',
-            'rgba(139, 92, 246, 0.6)',
+            'rgba(16, 185, 129, 0.8)',
+            'rgba(245, 158, 11, 0.8)',
+            'rgba(59, 130, 246, 0.8)',
+            'rgba(139, 92, 246, 0.8)',
           ],
           borderColor: [
             'rgba(16, 185, 129, 1)',
@@ -146,8 +193,8 @@ export default function Dashboard() {
             'rgba(59, 130, 246, 1)',
             'rgba(139, 92, 246, 1)',
           ],
-          borderWidth: 1,
-          borderRadius: 8,
+          borderWidth: 2,
+          borderRadius: 12,
         },
       ],
     }),
@@ -162,9 +209,11 @@ export default function Dashboard() {
         labels: {
           font: {
             family: "'Inter', sans-serif",
-            size: 12
+            size: 12,
+            weight: '500'
           },
-          padding: 20
+          padding: 20,
+          usePointStyle: true,
         }
       },
       title: {
@@ -186,53 +235,147 @@ export default function Dashboard() {
         grid: {
           display: true,
           color: 'rgba(0, 0, 0, 0.05)'
+        },
+        ticks: {
+          font: {
+            family: "'Inter', sans-serif"
+          }
         }
       },
       x: {
         grid: {
           display: false
+        },
+        ticks: {
+          font: {
+            family: "'Inter', sans-serif"
+          }
         }
       }
     }
   };
 
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 to-blue-50">
+        <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-blue-500"></div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 py-8 px-4 sm:px-6 lg:px-8">
       <div className="max-w-7xl mx-auto space-y-8">
-        <div className="flex items-center justify-between">
-          <h1 className="text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-indigo-600">
-            Tableau de bord
-          </h1>
-          <div className="flex items-center space-x-2 text-gray-500 text-sm">
-            <Activity className="w-4 h-4" />
-            <span>Mise à jour en temps réel</span>
+        {/* Header */}
+        <div className="flex items-center justify-between bg-white p-6 rounded-2xl shadow-lg">
+          <div className="flex items-center space-x-4">
+            <div className="p-3 bg-blue-100 rounded-xl">
+              <Award className="w-8 h-8 text-blue-600" />
+            </div>
+            <div>
+              <h1 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-indigo-600">
+                Dashboard RH 📊
+              </h1>
+              <p className="text-gray-500">Bienvenue sur votre tableau de bord</p>
+            </div>
+          </div>
+          <div className="flex items-center space-x-4">
+            <div className="relative">
+              <button
+                onClick={() => setShowNotifications(!showNotifications)}
+                className="p-2 hover:bg-gray-100 rounded-full transition-colors relative"
+              >
+                <Bell className="w-6 h-6 text-gray-600" />
+                {notifications.length > 0 && (
+                  <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center animate-pulse">
+                    {notifications.length}
+                  </span>
+                )}
+              </button>
+              
+              {showNotifications && (
+                <div className="absolute right-0 mt-2 w-80 bg-white rounded-xl shadow-lg py-2 z-50">
+                  <div className="px-4 py-2 border-b border-gray-100">
+                    <h3 className="font-semibold text-gray-900">Notifications</h3>
+                  </div>
+                  <div className="max-h-96 overflow-y-auto">
+                    {notifications.map((notif) => (
+                      <div
+                        key={notif.id}
+                        className="px-4 py-3 hover:bg-gray-50 transition-colors cursor-pointer"
+                      >
+                        <p className="text-sm text-gray-800">{notif.message}</p>
+                        <p className="text-xs text-gray-500 mt-1">
+                          {formatDistanceToNow(notif.time, { addSuffix: true, locale: fr })}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+            
+            <div className="relative">
+              <button
+                onClick={() => setShowCalendar(!showCalendar)}
+                className="p-2 hover:bg-gray-100 rounded-full transition-colors relative"
+              >
+                <Calendar className="w-6 h-6 text-gray-600" />
+                {events.length > 0 && (
+                  <span className="absolute -top-1 -right-1 w-5 h-5 bg-blue-500 text-white text-xs rounded-full flex items-center justify-center">
+                    {events.length}
+                  </span>
+                )}
+              </button>
+              
+              {showCalendar && (
+                <div className="absolute right-0 mt-2 w-80 bg-white rounded-xl shadow-lg py-2 z-50">
+                  <div className="px-4 py-2 border-b border-gray-100">
+                    <h3 className="font-semibold text-gray-900">Événements à venir</h3>
+                  </div>
+                  <div className="max-h-96 overflow-y-auto">
+                    {events.map((event) => (
+                      <div
+                        key={event.id}
+                        className="px-4 py-3 hover:bg-gray-50 transition-colors cursor-pointer"
+                      >
+                        <p className="text-sm font-medium text-gray-800">{event.title}</p>
+                        <p className="text-xs text-gray-500 mt-1">
+                          {formatDistanceToNow(event.date, { addSuffix: true, locale: fr })}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
         </div>
 
-        {/* Statistiques principales */}
+        {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="bg-white rounded-2xl shadow-lg p-6 transform hover:scale-105 transition-all duration-300">
+          <div className="bg-white rounded-2xl shadow-lg p-6 transform hover:scale-105 transition-all duration-300 border-t-4 border-blue-500">
             <div className="flex items-center justify-between">
               <div>
-                <h2 className="text-lg font-semibold text-gray-700 mb-1">Total des employés</h2>
+                <h2 className="text-lg font-semibold text-gray-700 mb-1">Total Employés 👥</h2>
                 <p className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-indigo-600">
                   {employeeCount}
                 </p>
               </div>
-              <div className="bg-blue-100 p-3 rounded-full">
+              <div className="bg-blue-100 p-3 rounded-full animate-pulse">
                 <Users className="w-6 h-6 text-blue-600" />
               </div>
             </div>
             <div className="mt-4 flex items-center text-sm text-gray-600">
               <TrendingUp className="w-4 h-4 mr-1" />
-              <span>Total actuel</span>
+              <span>+12% ce mois</span>
             </div>
           </div>
 
-          <div className="bg-white rounded-2xl shadow-lg p-6 transform hover:scale-105 transition-all duration-300">
+          <div className="bg-white rounded-2xl shadow-lg p-6 transform hover:scale-105 transition-all duration-300 border-t-4 border-green-500">
             <div className="flex items-center justify-between">
               <div>
-                <h2 className="text-lg font-semibold text-gray-700 mb-1">Employés présents</h2>
+                <h2 className="text-lg font-semibold text-gray-700 mb-1">Présents ✅</h2>
                 <p className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-green-500 to-emerald-500">
                   {presenceCount}
                 </p>
@@ -242,23 +385,21 @@ export default function Dashboard() {
               </div>
             </div>
             <div className="mt-4 flex items-center text-sm text-gray-600">
-              <TrendingUp className="w-4 h-4 mr-1" />
-              <span>Aujourd'hui</span>
+              <Coffee className="w-4 h-4 mr-1" />
+              <span>En service</span>
             </div>
           </div>
 
           <div 
-            className="bg-white rounded-2xl shadow-lg p-6 transform hover:scale-105 transition-all duration-300 cursor-pointer" 
             onClick={() => navigate('/absent')}
+            className="bg-white rounded-2xl shadow-lg p-6 transform hover:scale-105 transition-all duration-300 border-t-4 border-red-500 cursor-pointer hover:shadow-xl"
             role="button"
             tabIndex={0}
             onKeyDown={(e) => e.key === 'Enter' && navigate('/absent')}
           >
             <div className="flex items-center justify-between">
               <div>
-                <h2 className="text-lg font-semibold text-gray-700 mb-1">
-                  Employés absents 🏃‍♂️
-                </h2>
+                <h2 className="text-lg font-semibold text-gray-700 mb-1">Absents 🏃‍♂️</h2>
                 <p className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-red-500 to-pink-500">
                   {absenceCount}
                 </p>
@@ -268,17 +409,15 @@ export default function Dashboard() {
               </div>
             </div>
             <div className="mt-4 flex items-center text-sm text-gray-600">
-              <TrendingUp className="w-4 h-4 mr-1" />
-              <span>Aujourd'hui</span>
+              <Activity className="w-4 h-4 mr-1" />
+              <span>Voir les détails →</span>
             </div>
-</div>
-
-
+          </div>
         </div>
 
-        {/* Graphiques */}
+        {/* Charts */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <div className="bg-white rounded-2xl shadow-lg p-6 hover:shadow-xl transition-shadow duration-300">
+          <div className="bg-white rounded-2xl shadow-lg p-6 hover:shadow-xl transition-all duration-300">
             <Bar
               data={chartData}
               options={{
@@ -287,13 +426,13 @@ export default function Dashboard() {
                   ...chartOptions.plugins,
                   title: {
                     ...chartOptions.plugins.title,
-                    text: "Répartition des employés par département"
+                    text: "📊 Répartition par département"
                   }
                 }
               }}
             />
           </div>
-          <div className="bg-white rounded-2xl shadow-lg p-6 hover:shadow-xl transition-shadow duration-300">
+          <div className="bg-white rounded-2xl shadow-lg p-6 hover:shadow-xl transition-all duration-300">
             <Bar
               data={presenceChartData}
               options={{
@@ -302,7 +441,7 @@ export default function Dashboard() {
                   ...chartOptions.plugins,
                   title: {
                     ...chartOptions.plugins.title,
-                    text: "Présence par département aujourd'hui"
+                    text: "📈 Présence aujourd'hui"
                   }
                 }
               }}
@@ -310,19 +449,27 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {/* Activités récentes */}
+        {/* Recent Activities */}
         <div className="bg-white rounded-2xl shadow-lg p-6">
-          <h2 className="text-xl font-bold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-purple-600 to-pink-600">
-            Activités récentes
-          </h2>
-          <div className="space-y-6">
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-600 to-pink-600">
+              Activités récentes 🔔
+            </h2>
+            <button
+              onClick={() => navigate('/activities')}
+              className="px-4 py-2 text-sm text-white bg-gradient-to-r from-purple-600 to-pink-600 rounded-lg hover:opacity-90 transition-opacity duration-200"
+            >
+              Voir tout →
+            </button>
+          </div>
+          <div className="space-y-4">
             {recentActivities.map((activity, index) => (
               <div
                 key={activity.id}
-                className="flex items-center space-x-4 p-4 rounded-xl bg-gradient-to-r from-gray-50 to-gray-100 hover:from-blue-50 hover:to-indigo-50 transition-colors duration-300"
+                className="flex items-center space-x-4 p-4 rounded-xl bg-gradient-to-r from-gray-50 to-gray-100 hover:from-blue-50 hover:to-indigo-50 transition-all duration-300 transform hover:scale-102"
               >
                 <div className="flex-shrink-0">
-                  <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-500 rounded-full flex items-center justify-center text-white font-bold text-lg">
+                  <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-500 rounded-full flex items-center justify-center text-white font-bold text-lg shadow-lg">
                     {activity.fullName.split(' ').map(n => n[0]).join('')}
                   </div>
                 </div>
@@ -331,15 +478,15 @@ export default function Dashboard() {
                     {activity.fullName}
                   </p>
                   <p className="text-sm text-gray-500">
-                    Ajouté au département {activity.department}
+                    ✨ Ajouté au département {activity.department}
                   </p>
                   <p className="text-xs text-gray-400">
-                    Il y a {formatDistanceToNow(new Date(activity.dateAdded), { locale: fr })}
+                    ⏰ Il y a {formatDistanceToNow(new Date(activity.dateAdded), { locale: fr })}
                   </p>
                 </div>
                 <div className="flex-shrink-0">
-                  <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                    Nouveau
+                  <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 animate-pulse">
+                    Nouveau 🌟
                   </span>
                 </div>
               </div>
@@ -350,3 +497,5 @@ export default function Dashboard() {
     </div>
   );
 }
+export default Dashboard;
+ 

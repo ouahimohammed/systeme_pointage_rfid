@@ -1,7 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { ref, push, onValue, remove, update, query, equalTo, get } from 'firebase/database';
 import { db } from '../lib/firebase';
-import { Eye, Edit2, Trash2, Search, Download, Filter, UserPlus, Badge, Briefcase, Users } from 'lucide-react';
+import { Eye, Edit2, Trash2, Search, Download, Filter, UserPlus, Badge, Briefcase, Users, Upload } from 'lucide-react';
 
 export default function Employees() {
   const [employees, setEmployees] = useState([]);
@@ -44,7 +44,7 @@ export default function Employees() {
   }, []);
 
   useEffect(() => {
-    const ws = new WebSocket('ws://192.168.1.43:81');
+    const ws = new WebSocket('ws://192.168.100.114:81');
 
     ws.onopen = () => {
       setStatus('Connecté au WebSocket');
@@ -202,6 +202,94 @@ export default function Employees() {
       return acc;
     }, {})
   };
+  const exportToCSV = () => {
+    // Headers for the CSV file
+    const headers = ['Nom Complet', 'CIN', 'Genre', 'Département', 'UID Carte', 'Date d\'ajout'];
+    
+    // Convert employees data to CSV format
+    const employeeData = filteredEmployees.map(emp => [
+      emp.fullName,
+      emp.cin,
+      emp.gender,
+      emp.department,
+      emp.cardUID,
+      new Date(emp.dateAdded).toLocaleDateString()
+    ]);
+  
+    // Combine headers and data
+    const csvContent = [
+      headers.join(','),
+      ...employeeData.map(row => row.join(','))
+    ].join('\n');
+  
+    // Create and download the file
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = `employees_${new Date().toISOString().split('T')[0]}.csv`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+  
+  const fileInputRef = useRef(null);
+  
+  const importFromCSV = (event) => {
+    const file = event.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = async (e) => {
+        try {
+          const text = e.target.result;
+          const rows = text.split('\n');
+          const headers = rows[0].split(',');
+          
+          // Skip header row and process each data row
+          for (let i = 1; i < rows.length; i++) {
+            if (rows[i].trim() === '') continue;
+            
+            const values = rows[i].split(',');
+            const employeeData = {
+              fullName: values[0],
+              cin: values[1],
+              gender: values[2],
+              department: values[3],
+              cardUID: values[4],
+              dateAdded: new Date().toISOString()
+            };
+  
+            // Validate required fields
+            if (!employeeData.fullName || !employeeData.cin || !employeeData.department) {
+              console.error(`Ligne ${i + 1}: Données manquantes`);
+              continue;
+            }
+  
+            // Check if CIN is unique
+            if (!isCinUnique(employeeData.cin)) {
+              console.error(`Ligne ${i + 1}: CIN déjà utilisé`);
+              continue;
+            }
+  
+            // Add to database
+            const employeesRef = ref(db, 'employees');
+            await push(employeesRef, employeeData);
+          }
+          
+          alert('Importation terminée avec succès !');
+        } catch (error) {
+          console.error('Erreur lors de l\'importation:', error);
+          alert('Erreur lors de l\'importation du fichier CSV');
+        }
+      };
+      reader.readAsText(file);
+    }
+    // Reset file input
+    event.target.value = '';
+  };
+  
+  {/* In the JSX, find the div with the "Barre d'actions" comment and replace it with: */}
+  
+ 
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50 p-8">
@@ -230,43 +318,68 @@ export default function Employees() {
           ))}
         </div>
 
-        {/* Barre d'actions */}
-        <div className="bg-white rounded-xl shadow-lg p-6 mb-8">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-              <input
-                type="text"
-                placeholder="Rechercher par nom ou CIN..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
-            <div className="relative">
-              <Filter className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-              <select
-                value={filterDepartment}
-                onChange={(e) => setFilterDepartment(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500"
-              >
-                <option value="">Tous les départements</option>
-                {departments.map(dept => (
-                  <option key={dept} value={dept}>{dept}</option>
-                ))}
-              </select>
-            </div>
-            <div className="flex justify-end">
-              <button
-                onClick={() => setIsAddModalOpen(true)}
-                className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-6 py-2 rounded-lg hover:shadow-lg transform hover:-translate-y-0.5 transition-all duration-200 flex items-center space-x-2"
-              >
-                <UserPlus className="w-5 h-5" />
-                <span>Ajouter un Employé</span>
-              </button>
-            </div>
-          </div>
-        </div>
+        <div className="bg-white rounded-xl shadow-sm p-4 mb-6">
+  <div className="flex flex-wrap items-center gap-3">
+    {/* Search Input */}
+    <div className="relative flex-1 min-w-[200px]">
+      <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+      <input
+        type="text"
+        placeholder="Rechercher par nom ou CIN..."
+        value={searchTerm}
+        onChange={(e) => setSearchTerm(e.target.value)}
+        className="w-full pl-8 pr-3 py-1.5 text-sm border border-gray-200 rounded-md focus:ring-1 focus:ring-blue-400 focus:border-blue-400"
+      />
+    </div>
+
+    {/* Department Filter */}
+    <div className="relative min-w-[180px]">
+      <Filter className="absolute left-2 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+      <select
+        value={filterDepartment}
+        onChange={(e) => setFilterDepartment(e.target.value)}
+        className="w-full pl-8 pr-3 py-1.5 text-sm border border-gray-200 rounded-md focus:ring-1 focus:ring-blue-400 focus:border-blue-400 bg-white"
+      >
+        <option value="">Tous les départements</option>
+        {departments.map(dept => (
+          <option key={dept} value={dept}>{dept}</option>
+        ))}
+      </select>
+    </div>
+
+    {/* Action Buttons */}
+    <div className="flex items-center gap-2">
+      <button
+        onClick={() => fileInputRef.current.click()}
+        className="inline-flex items-center px-3 py-1.5 text-sm text-emerald-600 bg-emerald-50 border border-emerald-200 rounded-md hover:bg-emerald-100 transition-colors duration-150"
+      >
+        <Upload className="w-4 h-4 mr-1.5" />
+        Import
+      </button>
+      <input
+        type="file"
+        ref={fileInputRef}
+        onChange={importFromCSV}
+        accept=".csv"
+        className="hidden"
+      />
+      <button
+        onClick={exportToCSV}
+        className="inline-flex items-center px-3 py-1.5 text-sm text-blue-600 bg-blue-50 border border-blue-200 rounded-md hover:bg-blue-100 transition-colors duration-150"
+      >
+        <Download className="w-4 h-4 mr-1.5" />
+        Export
+      </button>
+      <button
+        onClick={() => setIsAddModalOpen(true)}
+        className="inline-flex items-center px-3 py-1.5 text-sm text-white bg-blue-600 rounded-md hover:bg-blue-700 transition-colors duration-150"
+      >
+        <UserPlus className="w-4 h-4 mr-1.5" />
+        Ajouter
+      </button>
+    </div>
+  </div>
+</div>
 
         {/* Table des employés */}
         <div className="bg-white rounded-xl shadow-lg overflow-hidden">
