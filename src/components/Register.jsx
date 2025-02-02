@@ -64,17 +64,17 @@ const Register = ({ onBack }) => {
         <div className="w-full max-w-md mx-auto">
           <button
             onClick={onBack}
-            className="flex items-center gap-2 text-gray-600 hover:text-blue-600 transition-colors mb-6"
+            className="flex items-center gap-2 text-gray-600 hover:text-blue-600 transition-colors mb-6 animate-[fadeIn_0.3s_ease-out]"
           >
             <ArrowLeft className="w-4 h-4" />
             Retour à la connexion
           </button>
 
-          <h2 className="text-3xl font-bold mb-2">Créer un compte 🚀</h2>
-          <p className="text-gray-600 mb-6">Rejoignez-nous pour une meilleure gestion RH.</p>
+          <h2 className="text-3xl font-bold mb-2 animate-[fadeIn_0.4s_ease-out]">Créer un compte 🚀</h2>
+          <p className="text-gray-600 mb-6 animate-[fadeIn_0.5s_ease-out]">Rejoignez-nous pour une meilleure gestion RH.</p>
 
           <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="relative group">
+            <div className="relative group animate-[slideUp_0.3s_ease-out]">
               <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 group-hover:text-blue-500 transition-colors" />
               <input
                 type="text"
@@ -87,7 +87,7 @@ const Register = ({ onBack }) => {
               />
             </div>
 
-            <div className="relative group">
+            <div className="relative group animate-[slideUp_0.4s_ease-out]">
               <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 group-hover:text-blue-500 transition-colors" />
               <input
                 type="email"
@@ -100,7 +100,7 @@ const Register = ({ onBack }) => {
               />
             </div>
 
-            <div className="relative group">
+            <div className="relative group animate-[slideUp_0.5s_ease-out]">
               <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 group-hover:text-blue-500 transition-colors" />
               <input
                 type="password"
@@ -113,7 +113,7 @@ const Register = ({ onBack }) => {
               />
             </div>
 
-            <div className="relative group">
+            <div className="relative group animate-[slideUp_0.6s_ease-out]">
               <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 group-hover:text-blue-500 transition-colors" />
               <input
                 type="password"
@@ -127,7 +127,7 @@ const Register = ({ onBack }) => {
             </div>
 
             {error && (
-              <div className="bg-red-50 text-red-600 p-3 rounded-lg flex items-center gap-2 animate-shake text-sm">
+              <div className="bg-red-50 text-red-600 p-3 rounded-lg flex items-center gap-2 animate-[shake_0.5s_ease-in-out] text-sm">
                 ⚠️ {error}
               </div>
             )}
@@ -135,7 +135,7 @@ const Register = ({ onBack }) => {
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg font-semibold flex items-center justify-center gap-2 transform hover:translate-y-[-1px] transition-all duration-200"
+              className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg font-semibold flex items-center justify-center gap-2 transform hover:translate-y-[-1px] transition-all duration-200 animate-[slideUp_0.7s_ease-out]"
             >
               {isLoading ? (
                 <Loader2 className="w-5 h-5 animate-spin" />
@@ -154,24 +154,24 @@ const Register = ({ onBack }) => {
       <div className="md:w-1/2 bg-gradient-to-br from-purple-600 to-pink-700 p-8 text-white flex flex-col justify-center items-center relative overflow-hidden order-1 md:order-2">
         <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1551434678-e076c223a692')] opacity-10 bg-cover bg-center" />
         <div className="relative z-10 text-center">
-          <Building2 className="w-16 h-16 mb-6 mx-auto animate-bounce" />
-          <h2 className="text-3xl font-bold mb-4">Rejoignez-nous! 🎉</h2>
-          <p className="text-lg mb-6 leading-relaxed">
+          <Building2 className="w-16 h-16 mb-6 mx-auto animate-[bounce_2s_ease-in-out_infinite]" />
+          <h2 className="text-3xl font-bold mb-4 animate-[fadeIn_0.5s_ease-out]">Rejoignez-nous! 🎉</h2>
+          <p className="text-lg mb-6 leading-relaxed animate-[slideUp_0.5s_ease-out]">
             Découvrez une nouvelle façon de gérer vos ressources humaines
           </p>
           <div className="space-y-3 text-base">
-            <p className="flex items-center gap-2">
+            <p className="flex items-center gap-2 animate-[slideUp_0.3s_ease-out]">
               <span className="text-xl">🎯</span> Gestion simplifiée
             </p>
-            <p className="flex items-center gap-2">
+            <p className="flex items-center gap-2 animate-[slideUp_0.4s_ease-out]">
               <span className="text-xl">🔒</span> Sécurité maximale
             </p>
-            <p className="flex items-center gap-2">
+            <p className="flex items-center gap-2 animate-[slideUp_0.5s_ease-out]">
               <span className="text-xl">🚀</span> Performance optimale
             </p>
           </div>
         </div>
-        <div className="absolute bottom-0 left-0 right-0 h-2 bg-gradient-to-r from-yellow-300 via-pink-500 to-purple-500"></div>
+        <div className="absolute bottom-0 left-0 right-0 h-2 bg-gradient-to-r from-yellow-300 via-pink-500 to-purple-500 animate-[shimmer_2s_linear_infinite]"></div>
       </div>
     </div>
   );
